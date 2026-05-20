@@ -30,8 +30,8 @@ def dergo_mesazh():
     if not pyetja.strip():
         return jsonify({"pergjigja": "Ju lutem shkruani diçka..."})
         
-    # Kemi ndryshuar modelin në gemini-1.5-flash-8b që është i certifikuar për API v1
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:generateContent?key={CHILESI_SEKRET}"
+    # Kemi vendosur modelin zyrtar gemini-2.5-flash për API v1
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={CHILESI_SEKRET}"
     
     headers = {
         "Content-Type": "application/json"
