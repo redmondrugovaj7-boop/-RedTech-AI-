@@ -30,14 +30,13 @@ def dergo_mesazh():
     if not pyetja.strip():
         return jsonify({"pergjigja": "Ju lutem shkruani diçka..."})
         
-    # Lidhja direkte me API zyrtare v1 të Google për Gemini 1.5 Flash
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={CHILESI_SEKRET}"
+    # Kemi ndryshuar modelin në gemini-1.5-flash-8b që është i certifikuar për API v1
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:generateContent?key={CHILESI_SEKRET}"
     
     headers = {
         "Content-Type": "application/json"
     }
     
-    # Këtu i dërgojmë rregullat e tuaja dhe pyetjen direkt në server
     payload = {
         "contents": [
             {
@@ -52,7 +51,6 @@ def dergo_mesazh():
         REDEPLOY_REQ = requests.post(url, json=payload, headers=headers)
         pergjigja_json = REDEPLOY_REQ.json()
         
-        # Nxjerrim tekstin e përgjigjes nga struktura e Google
         if "candidates" in pergjigja_json:
             teksti = pergjigja_json["candidates"][0]["content"]["parts"][0]["text"]
             return jsonify({"pergjigja": teksti})
