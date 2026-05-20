@@ -1,12 +1,11 @@
 import os
+import requests
 from flask import Flask, render_template, request, jsonify, make_response
-import google.generativeai as genai
 
 app = Flask(__name__)
 
 # Çelësi sekret i gatshëm direkt në kod
 CHILESI_SEKRET = "AIzaSyCzkok647fu7aOYFch77fVIHQeRUbvcstg"
-genai.configure(api_key=CHILESI_SEKRET)
 
 # Lexohen rregullat në mënyrë të sigurt
 rregullat = "Je RedTech AI, një asistent inteligjent."
@@ -17,17 +16,6 @@ if os.path.exists("rregullat.txt"):
     except Exception as e:
         print(f"Gabim gjatë leximit të rregullat.txt: {e}")
 
-# Krijojmë bisedën me gemini-1.0-pro i cili pranon udhëzimet e sistemit në këtë librari
-try:
-    model = genai.GenerativeModel(
-        model_name="gemini-1.0-pro",
-        system_instruction=rregullat
-    )
-    biseda = model.start_chat(history=[])
-except Exception as e:
-    print(f"Gabim gjatë krijimit të modelit: {e}")
-    biseda = None
-
 @app.route('/')
 def home():
     response = make_response(render_template('index.html'))
@@ -36,23 +24,41 @@ def home():
 
 @app.route('/dergo', methods=['POST'])
 def dergo_mesazh():
-    global biseda
     te_dhenat = request.json
     pyetja = te_dhenat.get("mesazhi", "")
     
     if not pyetja.strip():
         return jsonify({"pergjigja": "Ju lutem shkruani diçka..."})
         
+    # Lidhja direkte me API zyrtare v1 të Google për Gemini 1.5 Flash
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={CHILESI_SEKRET}"
+    
+    headers = {
+        "Content-Type": "application/json"
+    }
+    
+    # Këtu i dërgojmë rregullat e tuaja dhe pyetjen direkt në server
+    payload = {
+        "contents": [
+            {
+                "parts": [
+                    {"text": f"Rregullat e sistemit që duhet t'i zbatosh me ngulm:\n{rregullat}\n\nMesazhi i përdoruesit: {pyetja}"}
+                ]
+            }
+        ]
+    }
+    
     try:
-        if biseda is None:
-            model = genai.GenerativeModel(
-                model_name="gemini-1.0-pro",
-                system_instruction=rregullat
-            )
-            biseda = model.start_chat(history=[])
+        REDEPLOY_REQ = requests.post(url, json=payload, headers=headers)
+        pergjigja_json = REDEPLOY_REQ.json()
+        
+        # Nxjerrim tekstin e përgjigjes nga struktura e Google
+        if "candidates" in pergjigja_json:
+            teksti = pergjigja_json["candidates"][0]["content"]["parts"][0]["text"]
+            return jsonify({"pergjigja": teksti})
+        else:
+            return jsonify({"pergjigja": f"Gabim nga Google: {pergjigja_json}"})
             
-        pergjigja = biseda.send_message(pyetja)
-        return jsonify({"pergjigja": pergjigja.text})
     except Exception as e:
         return jsonify({"pergjigja": f"Gabim gjatë dërgimit: {e}"})
 
