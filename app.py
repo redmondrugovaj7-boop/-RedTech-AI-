@@ -4,7 +4,7 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
-# Vendosim çelësin sekret direkt këtu që Vercel ta ketë të gatshëm menjëherë
+# Çelësi sekret i gatshëm direkt në kod
 CHILESI_SEKRET = "AIzaSyCzkok647fu7aOYFch77fVIHQeRUbvcstg"
 genai.configure(api_key=CHILESI_SEKRET)
 
@@ -17,10 +17,10 @@ if os.path.exists("rregullat.txt"):
     except Exception as e:
         print(f"Gabim gjatë leximit të rregullat.txt: {e}")
 
-# Krijojmë modelin e bisedës me gemini-1.5-flash
+# Krijojmë bisedën me emërtimin e plotë zyrtar që pranon kjo librari
 try:
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name="models/gemini-1.5-flash-latest",
         system_instruction=rregullat
     )
     biseda = model.start_chat(history=[])
@@ -46,7 +46,7 @@ def dergo_mesazh():
     try:
         if biseda is None:
             model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash",
+                model_name="models/gemini-1.5-flash-latest",
                 system_instruction=rregullat
             )
             biseda = model.start_chat(history=[])
