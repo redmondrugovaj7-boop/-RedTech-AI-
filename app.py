@@ -17,10 +17,10 @@ if os.path.exists("rregullat.txt"):
     except Exception as e:
         print(f"Gabim gjatë leximit të rregullat.txt: {e}")
 
-# Krijojmë bisedën me emërtimin e plotë zyrtar që pranon kjo librari
+# Krijojmë bisedën me gemini-1.0-pro i cili pranon udhëzimet e sistemit në këtë librari
 try:
     model = genai.GenerativeModel(
-        model_name="models/gemini-1.5-flash-latest",
+        model_name="gemini-1.0-pro",
         system_instruction=rregullat
     )
     biseda = model.start_chat(history=[])
@@ -46,7 +46,7 @@ def dergo_mesazh():
     try:
         if biseda is None:
             model = genai.GenerativeModel(
-                model_name="models/gemini-1.5-flash-latest",
+                model_name="gemini-1.0-pro",
                 system_instruction=rregullat
             )
             biseda = model.start_chat(history=[])
