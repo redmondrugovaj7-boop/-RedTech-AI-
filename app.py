@@ -1,12 +1,12 @@
 import os
 from flask import Flask, render_template, request, jsonify, make_response
-import google.generativeai as genai  # Libraria standard që nuk dështon
+import google.generativeai as genai
 
 app = Flask(__name__)
 
 CHILESI_SEKRET = "AIzaSyCzkok647fu7aOYFch77fVIHQeRUbvcstg"
 
-# Konfigurohet çelësi sekret
+# Konfigurohet çelësi sekret i Gemini
 genai.configure(api_key=CHILESI_SEKRET)
 
 # Lexohen rregullat në mënyrë të sigurt
@@ -18,10 +18,10 @@ if os.path.exists("rregullat.txt"):
     except Exception as e:
         print(f"Gabim gjatë leximit të rregullat.txt: {e}")
 
-# Krijojmë modelin e bisedës me emërimin e saktë për këtë librari
+# Krijojmë modelin e bisedës në mënyrë të thjeshtë e standarde
 try:
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",  # Versioni super i shpejtë dhe i saktë
+        model_name="gemini-1.5-flash",
         system_instruction=rregullat
     )
     biseda = model.start_chat(history=[])
