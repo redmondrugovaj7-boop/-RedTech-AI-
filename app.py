@@ -18,13 +18,17 @@ if os.path.exists("rregullat.txt"):
     except Exception as e:
         print(f"Gabim gjatë leximit të rregullat.txt: {e}")
 
-# Krijojmë modelin e bisedës në mënyrë të thjeshtë e standarde
+# Krijojmë modelin e bisedës me gemini-pro
 try:
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
-        system_instruction=rregullat
+        model_name="gemini-pro"
     )
-    biseda = model.start_chat(history=[])
+    # Pasi gemini-pro i vjetër nuk e ka system_instruction direkt, 
+    # ne ia dërgojmë rregullat si mesazh të parë në histori që t'i mbajë mend
+    biseda = model.start_chat(history=[
+        {"role": "user", "parts": [f"Rregullat e tuaja: {rregullat} Shkruaj 'Kuptova'."]},
+        {"role": "model", "parts": ["Kuptova."]}
+    ])
 except Exception as e:
     print(f"Gabim gjatë krijimit të modelit: {e}")
     biseda = None
@@ -46,11 +50,11 @@ def dergo_mesazh():
         
     try:
         if biseda is None:
-            model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash",
-                system_instruction=rregullat
-            )
-            biseda = model.start_chat(history=[])
+            model = genai.GenerativeModel(model_name="gemini-pro")
+            biseda = model.start_chat(history=[
+                {"role": "user", "parts": [f"Rregullat e tuaja: {rregullat} Shkruaj 'Kuptova'."]},
+                {"role": "model", "parts": ["Kuptova."]}
+            ])
             
         pergjigja = biseda.send_message(pyetja)
         return jsonify({"pergjigja": pergjigja.text})
