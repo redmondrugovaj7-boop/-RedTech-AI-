@@ -1,13 +1,13 @@
 import os
 from flask import Flask, render_template, request, jsonify, make_response
-import google.generativeai as genai
+import google_genai as google_genai_lib  # Importim specifik që Vercel mos të ngatërrohet
 
 app = Flask(__name__)
 
 CHILESI_SEKRET = "AIzaSyCzkok647fu7aOYFch77fVIHQeRUbvcstg"
 
-# Konfigurohet çelësi sekret i Gemini
-genai.configure(api_key=CHILESI_SEKRET)
+# Ndizet klienti i ri me librarinë e saktë
+client = google_genai_lib.Client(api_key=CHILESI_SEKRET)
 
 # Lexohen rregullat në mënyrë të sigurt
 rregullat = "Je RedTech AI, një asistent inteligjent."
@@ -18,16 +18,15 @@ if os.path.exists("rregullat.txt"):
     except Exception as e:
         print(f"Gabim gjatë leximit të rregullat.txt: {e}")
 
-# Krijojmë modelin e bisedës
+# Krijojmë bisedën me versionin më të ri Gemini 2.5
+biseda = None
 try:
-    model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
-        system_instruction=rregullat
+    biseda = client.chats.create(
+        model="gemini-2.5-flash",
+        config={"system_instruction": rregullat, "temperature": 0.7}
     )
-    biseda = model.start_chat(history=[])
 except Exception as e:
-    print(f"Gabim gjatë krijimit të modelit: {e}")
-    biseda = None
+    print(f"Gabim gjatë krijimit të bisedës fillestare: {e}")
 
 @app.route('/')
 def home():
@@ -45,13 +44,11 @@ def dergo_mesazh():
         return jsonify({"pergjigja": "Ju lutem shkruani diçka..."})
         
     try:
-        # Nëse biseda nuk është krijuar, e krijojmë tani
         if biseda is None:
-            model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash",
-                system_instruction=rregullat
+            biseda = client.chats.create(
+                model="gemini-2.5-flash",
+                config={"system_instruction": rregullat, "temperature": 0.7}
             )
-            biseda = model.start_chat(history=[])
             
         pergjigja = biseda.send_message(pyetja)
         return jsonify({"pergjigja": pergjigja.text})
