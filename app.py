@@ -4,9 +4,9 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
-# Vercel do ta marrë çelësin në mënyrë të sigurt nga sistemi
-API_KEY = os.environ.get("GEMINI_API_KEY")
-genai.configure(api_key=API_KEY)
+# Vendosim çelësin sekret direkt këtu që Vercel ta ketë të gatshëm menjëherë
+CHILESI_SEKRET = "AIzaSyCzkok647fu7aOYFch77fVIHQeRUbvcstg"
+genai.configure(api_key=CHILESI_SEKRET)
 
 # Lexohen rregullat në mënyrë të sigurt
 rregullat = "Je RedTech AI, një asistent inteligjent."
@@ -17,7 +17,7 @@ if os.path.exists("rregullat.txt"):
     except Exception as e:
         print(f"Gabim gjatë leximit të rregullat.txt: {e}")
 
-# Krijojmë modelin e bisedës me gemini-1.5-flash (që pranon system_instruction)
+# Krijojmë modelin e bisedës me gemini-1.5-flash
 try:
     model = genai.GenerativeModel(
         model_name="gemini-1.5-flash",
@@ -42,9 +42,6 @@ def dergo_mesazh():
     
     if not pyetja.strip():
         return jsonify({"pergjigja": "Ju lutem shkruani diçka..."})
-        
-    if not os.environ.get("GEMINI_API_KEY"):
-        return jsonify({"pergjigja": "Gabim: Nuk është gjetur çelësi API në Vercel!"})
         
     try:
         if biseda is None:
