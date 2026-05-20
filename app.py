@@ -4,10 +4,9 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
-CHILESI_SEKRET = "AIzaSyCzkok647fu7aOYFch77fVIHQeRUbvcstg"
-
-# Konfigurohet çelësi sekret i Gemini
-genai.configure(api_key=CHILESI_SEKRET)
+# Vercel do ta marrë çelësin në mënyrë të sigurt nga sistemi
+API_KEY = os.environ.get("GEMINI_API_KEY")
+genai.configure(api_key=API_KEY)
 
 # Lexohen rregullat në mënyrë të sigurt
 rregullat = "Je RedTech AI, një asistent inteligjent."
@@ -18,17 +17,13 @@ if os.path.exists("rregullat.txt"):
     except Exception as e:
         print(f"Gabim gjatë leximit të rregullat.txt: {e}")
 
-# Krijojmë modelin e bisedës me gemini-pro
+# Krijojmë modelin e bisedës me gemini-1.5-flash (që pranon system_instruction)
 try:
     model = genai.GenerativeModel(
-        model_name="gemini-pro"
+        model_name="gemini-1.5-flash",
+        system_instruction=rregullat
     )
-    # Pasi gemini-pro i vjetër nuk e ka system_instruction direkt, 
-    # ne ia dërgojmë rregullat si mesazh të parë në histori që t'i mbajë mend
-    biseda = model.start_chat(history=[
-        {"role": "user", "parts": [f"Rregullat e tuaja: {rregullat} Shkruaj 'Kuptova'."]},
-        {"role": "model", "parts": ["Kuptova."]}
-    ])
+    biseda = model.start_chat(history=[])
 except Exception as e:
     print(f"Gabim gjatë krijimit të modelit: {e}")
     biseda = None
@@ -48,13 +43,16 @@ def dergo_mesazh():
     if not pyetja.strip():
         return jsonify({"pergjigja": "Ju lutem shkruani diçka..."})
         
+    if not os.environ.get("GEMINI_API_KEY"):
+        return jsonify({"pergjigja": "Gabim: Nuk është gjetur çelësi API në Vercel!"})
+        
     try:
         if biseda is None:
-            model = genai.GenerativeModel(model_name="gemini-pro")
-            biseda = model.start_chat(history=[
-                {"role": "user", "parts": [f"Rregullat e tuaja: {rregullat} Shkruaj 'Kuptova'."]},
-                {"role": "model", "parts": ["Kuptova."]}
-            ])
+            model = genai.GenerativeModel(
+                model_name="gemini-1.5-flash",
+                system_instruction=rregullat
+            )
+            biseda = model.start_chat(history=[])
             
         pergjigja = biseda.send_message(pyetja)
         return jsonify({"pergjigja": pergjigja.text})
