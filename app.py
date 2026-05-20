@@ -1,13 +1,13 @@
 import os
 from flask import Flask, render_template, request, jsonify, make_response
-import google_genai as google_genai_lib  # Importim specifik që Vercel mos të ngatërrohet
+from google import genai  # Importi standard dhe i pastër
 
 app = Flask(__name__)
 
 CHILESI_SEKRET = "AIzaSyCzkok647fu7aOYFch77fVIHQeRUbvcstg"
 
-# Ndizet klienti i ri me librarinë e saktë
-client = google_genai_lib.Client(api_key=CHILESI_SEKRET)
+# Ndizet klienti i ri në mënyrë standarde
+client = genai.Client(api_key=CHILESI_SEKRET)
 
 # Lexohen rregullat në mënyrë të sigurt
 rregullat = "Je RedTech AI, një asistent inteligjent."
@@ -18,7 +18,7 @@ if os.path.exists("rregullat.txt"):
     except Exception as e:
         print(f"Gabim gjatë leximit të rregullat.txt: {e}")
 
-# Krijojmë bisedën me versionin më të ri Gemini 2.5
+# Krijojmë bisedën me modelin më të ri Gemini 2.5
 biseda = None
 try:
     biseda = client.chats.create(
