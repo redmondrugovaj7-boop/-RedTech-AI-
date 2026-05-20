@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RedTech AI</title>
+    <style>
+        body {
+            background-color: #0b0b11;
+            color: #cdd6f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Kutia e sfondit me emoji */
+        #bg-emojis {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.05;
+            font-size: 24px;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+            word-break: break-all;
+            line-height: 1.8;
+            letter-spacing: 15px;
+        }
+
+        header {
+            background-color: rgba(11, 11, 17, 0.95);
+            padding: 12px;
+            text-align: center;
+            border-bottom: 2px solid #ff3333;
+            box-shadow: 0 4px 20px rgba(255, 51, 51, 0.2);
+            z-index: 1;
+            backdrop-filter: blur(5px);
+        }
+
+        .titulli {
+            font-size: 26px;
+            font-weight: bold;
+            color: #ff3333;
+            text-shadow: 0 0 15px rgba(255, 51, 51, 0.7);
+            margin: 0;
+        }
+
+        /* STILI I STATUSIT DINAMIK QË KËRKOVE */
+        .status-container {
+            font-size: 13px;
+            color: #a6adc8;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .pika-statusit {
+            width: 8px;
+            height: 8px;
+            background-color: #00ff66;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #00ff66;
+            transition: all 0.3s ease;
+        }
+
+        /* Kur ndryshon statusi në "Po mendon", pika bëhet portokalli dhe pulson */
+        .pika-statusit.duke-punuar {
+            background-color: #ffaa00;
+            box-shadow: 0 0 8px #ffaa00;
+            animation: pulso 1s infinite alternate;
+        }
+
+        @keyframes pulso {
+            from { opacity: 0.4; }
+            to { opacity: 1; }
+        }
+
+        #chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1;
+        }
+
+        .mesazhi {
+            padding: 12px 16px;
+            border-radius: 16px;
+            max-width: 75%;
+            line-height: 1.5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            font-size: 15.5px;
+        }
+
+        .ti {
+            background: linear-gradient(135deg, #ff3333 0%, #990000 100%);
+            color: #ffffff;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+            border: 1px solid rgba(255, 51, 51, 0.4);
+        }
+
+        .roboti {
+            background-color: rgba(30, 30, 46, 0.95);
+            color: #cdd6f4;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+            border: 1px solid rgba(255, 51, 51, 0.15);
+            backdrop-filter: blur(5px);
+        }
+
+        footer {
+            background-color: rgba(11, 11, 17, 0.95);
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #313244;
+            z-index: 1;
+            backdrop-filter: blur(5px);
+        }
+
+        input {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #45475a;
+            background-color: #181825;
+            color: #cdd6f4;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ff3333;
+            box-shadow: 0 0 10px rgba(255, 51, 51, 0.4);
+        }
+
+        button {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #ff3333 0%, #a30000 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(255, 51, 51, 0.3);
+        }
+
+        button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 15px rgba(255, 51, 51, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="bg-emojis"></div>
+
+    <header>
+        <div class="titulli">🔴 RedTech AI 🤖⚡</div>
+        <!-- KËTU SHFAQET TEKSTI DINAMIK -->
+        <div class="status-container">
+            <div id="statusDot" class="pika-statusit"></div>
+            <span id="statusText">Online dhe gati 🟢</span>
+        </div>
+    </header>
+
+    <div id="chat-box">
+        <div class="mesazhi roboti">Përshëndetje! Unë jam RedTech AI. Si mund t'ju ndihmoj sot? 🚀</div>
+    </div>
+
+    <footer>
+        <input type="text" id="inputMesazhi" placeholder="Shkruaj diçka shoku... 💬" onkeypress="checkEnter(event)">
+        <button onclick="dergo()">Dërgo 🚀</button>
+    </footer>
+
+    <script>
+        // Mbushja e sfondit me emoji
+        window.onload = function() {
+            let bg = document.getElementById("bg-emojis");
+            let emojit = ["🤖", "⚡", "🎮", "💻", "🔥", "?", "!", "#", "🚀", "✨", "🔴"];
+            let tekstipërhapur = "";
+            for (let i = 0; i < 1500; i++) {
+                let randomEmoji = emojit[Math.floor(Math.random() * emojit.length)];
+                tekstipërhapur += randomEmoji + " ";
+            }
+            bg.innerText = tekstipërhapur;
+        };
+
+        function checkEnter(event) {
+            if (event.key === 'Enter') {
+                dergo();
+            }
+        }
+
+        function dergo() {
+            let inputi = document.getElementById("inputMesazhi");
+            let teksti = inputi.value.trim();
+            if (!teksti) return;
+
+            let chatBox = document.getElementById("chat-box");
+            let statusDot = document.getElementById("statusDot");
+            let statusText = document.getElementById("statusText");
+            
+            // 1. Shfaqet mesazhi i përdoruesit
+            chatBox.innerHTML += `<div class="mesazhi ti">${teksti}</div>`;
+            inputi.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // 2. Ndryshojmë statusin lart: ROBOTI PO PUNON!
+            statusDot.classList.add("duke-punuar");
+            statusText.innerText = "Prit edhe pak... ⏳";
+
+            // Pas 1.5 sekondave e ndryshojmë mesazhin në "Gati jemi" për efekt më real
+            setTimeout(() => {
+                if(statusText.innerText === "Prit edhe pak... ⏳") {
+                    statusText.innerText = "Gati jemi, po shkruaj... 📝";
+                }
+            }, 2000);
+
+            // 3. Dërgimi i kërkesës në server
+            fetch('/dergo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mesazhi: teksti })
+            })
+            .then(res => res.json())
+            .then(data => {
+                // 4. Shfaqet përgjigja dhe kthehet statusi normal "Online"
+                chatBox.innerHTML += `<div class="mesazhi roboti">${data.pergjigja}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+                
+                statusDot.classList.remove("duke-punuar");
+                statusText.innerText = "Online dhe gati 🟢";
+            })
+            .catch(err => {
+                chatBox.innerHTML += `<div class="mesazhi roboti">Gabim gjatë lidhjes! ❌</div>`;
+                statusDot.classList.remove("duke-punuar");
+                statusText.innerText = "Gabim në lidhje 🔴";
+            });
+        }
+    </script>
+</body>
+</html>
