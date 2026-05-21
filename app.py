@@ -1,12 +1,18 @@
 import os
 import requests
 from flask import Flask, render_template, request, jsonify, make_response
+from dotenv import load_dotenv
+
+# Ngarkon .env
+load_dotenv()
 
 app = Flask(__name__)
 
-CHILESI_SEKRET = "AIzaSyCzkok647fu7aOYFch77fVIHQeRUbvcstg"
+# Merr API KEY nga .env
+CHILESI_SEKRET = os.getenv("GEMINI_API_KEY")
 
 rregullat = "Je RedTech AI, një asistent inteligjent."
+
 if os.path.exists("rregullat.txt"):
     try:
         with open("rregullat.txt", "r", encoding="utf-8") as f:
@@ -22,38 +28,67 @@ def home():
 
 @app.route('/dergo', methods=['POST'])
 def dergo_mesazh():
-    te_dhenat = request.json
-    pyetja = te_dhenat.get("mesazhi", "")
-    
-    if not pyetja.strip():
-        return jsonify({"pergjigja": "Ju lutem shkruani diçka..."})
-        
-    # E ndryshuam në /v1/ që është versioni zyrtar i saktë për Gemini 2.5
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={CHILESI_SEKRET}"
-    
-    headers = {"Content-Type": "application/json"}
-    
-    # Struktura e saktë e mesazhit bashkë me rregullat e sistemit
-    payload = {
-        "contents": [{
-            "parts": [{"text": f"{rregullat}\n\nUser: {pyetja}"}]
-        }]
-    }
-    
     try:
-        req = requests.post(url, json=payload, headers=headers)
+        te_dhenat = request.get_json()
+
+        pyetja = te_dhenat.get("mesazhi", "")
+
+        if not pyetja.strip():
+            return jsonify({
+                "pergjigja": "Ju lutem shkruani diçka..."
+            })
+
+        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={CHILESI_SEKRET}"
+
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "text": f"{rregullat}\n\nUser: {pyetja}"
+                        }
+                    ]
+                }
+            ]
+        }
+
+        req = requests.post(
+            url,
+            headers=headers,
+            json=payload,
+            timeout=30
+        )
+
         res = req.json()
-        
-        if "candidates" in res and len(res["candidates"]) > 0:
+
+        print(res)
+
+        if "candidates" in res:
             teksti = res["candidates"][0]["content"]["parts"][0]["text"]
-            return jsonify({"pergjigja": teksti})
+
+            return jsonify({
+                "pergjigja": teksti
+            })
+
         elif "error" in res:
-            return jsonify({"pergjigja": f"Gabim nga Google: {res['error']['message']}"})
+            return jsonify({
+                "pergjigja": f"Gabim nga Google: {res['error']['message']}"
+            })
+
         else:
-            return jsonify({"pergjigja": f"Gabim i panjohur: {res}"})
+            return jsonify({
+                "pergjigja": "Nuk mora përgjigje nga AI."
+            })
+
     except Exception as e:
-        return jsonify({"pergjigja": f"Gabim gjatë dërgimit: {e}"})
+        return jsonify({
+            "pergjigja": f"Gabim gjatë dërgimit: {str(e)}"
+        })
 
 if __name__ == '__main__':
     porti = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host='0.0.0.0', port=porti)
+    app.run(host='0.0.0.0', port=porti, debug=True)
