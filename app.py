@@ -1,19 +1,11 @@
 import os
 import requests
 from flask import Flask, render_template, request, jsonify, make_response
-from dotenv import load_dotenv
-
-# Ngarkon file .env
-load_dotenv()
 
 app = Flask(__name__)
 
-# Merr API KEY nga .env
-CHILESI_SEKRET = os.getenv("GEMINI_API_KEY")
-
-# Kontrollon nëse API key ekziston
-if not CHILESI_SEKRET:
-    print("❌ API KEY nuk u gjet në file .env")
+# Çelësi sekret i vendosur direkt në kod që të punojë në çdo PC!
+CHILESI_SEKRET = "AIzaSyCzkok647fu7aOYFch77fVIHQeRUbvcstg"
 
 # Rregullat bazë të AI
 rregullat = "Je RedTech AI, një asistent inteligjent."
@@ -38,7 +30,6 @@ def home():
 def dergo_mesazh():
     try:
         te_dhenat = request.get_json()
-
         pyetja = te_dhenat.get("mesazhi", "")
 
         if not pyetja.strip():
@@ -46,7 +37,7 @@ def dergo_mesazh():
                 "pergjigja": "Ju lutem shkruani diçka..."
             })
 
-        # URL për Gemini AI
+        # URL zyrtare për Gemini AI në vitin 2026
         url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={CHILESI_SEKRET}"
 
         headers = {
@@ -75,24 +66,19 @@ def dergo_mesazh():
 
         res = req.json()
 
-        print(res)
-
-        # Merr përgjigjen
-        if "candidates" in res:
+        # Merr përgjigjen ose tregon gabimin e saktë
+        if "candidates" in res and len(res["candidates"]) > 0:
             teksti = res["candidates"][0]["content"]["parts"][0]["text"]
-
             return jsonify({
                 "pergjigja": teksti
             })
-
         elif "error" in res:
             return jsonify({
                 "pergjigja": f"Gabim nga Google: {res['error']['message']}"
             })
-
         else:
             return jsonify({
-                "pergjigja": "Nuk mora përgjigje nga AI."
+                "pergjigja": "Nuk mora përgjigje të saktë nga AI."
             })
 
     except Exception as e:
