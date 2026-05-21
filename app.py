@@ -28,9 +28,12 @@ def dergo_mesazh():
     if not pyetja.strip():
         return jsonify({"pergjigja": "Ju lutem shkruani diçka..."})
         
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={CHILESI_SEKRET}"
+    # E ndryshuam në /v1/ që është versioni zyrtar i saktë për Gemini 2.5
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={CHILESI_SEKRET}"
     
     headers = {"Content-Type": "application/json"}
+    
+    # Struktura e saktë e mesazhit bashkë me rregullat e sistemit
     payload = {
         "contents": [{
             "parts": [{"text": f"{rregullat}\n\nUser: {pyetja}"}]
@@ -40,13 +43,16 @@ def dergo_mesazh():
     try:
         req = requests.post(url, json=payload, headers=headers)
         res = req.json()
-        if "candidates" in res:
+        
+        if "candidates" in res and len(res["candidates"]) > 0:
             teksti = res["candidates"][0]["content"]["parts"][0]["text"]
             return jsonify({"pergjigja": teksti})
+        elif "error" in res:
+            return jsonify({"pergjigja": f"Gabim nga Google: {res['error']['message']}"})
         else:
-            return jsonify({"pergjigja": f"Gabim: {res}"})
+            return jsonify({"pergjigja": f"Gabim i panjohur: {res}"})
     except Exception as e:
-        return jsonify({"pergjigja": f"Gabim: {e}"})
+        return jsonify({"pergjigja": f"Gabim gjatë dërgimit: {e}"})
 
 if __name__ == '__main__':
     porti = int(os.environ.get("PORT", 5000))
