@@ -4,17 +4,15 @@ from flask import Flask, render_template, request, jsonify, make_response
 
 app = Flask(__name__)
 
-# Çelësi sekret i gatshëm direkt në kod
 CHILESI_SEKRET = "AIzaSyCzkok647fu7aOYFch77fVIHQeRUbvcstg"
 
-# Lexohen rregullat në mënyrë të sigurt
 rregullat = "Je RedTech AI, një asistent inteligjent."
 if os.path.exists("rregullat.txt"):
     try:
         with open("rregullat.txt", "r", encoding="utf-8") as f:
             rregullat = f.read()
     except Exception as e:
-        print(f"Gabim gjatë leximit të rregullat.txt: {e}")
+        print(f"Gabim: {e}")
 
 @app.route('/')
 def home():
@@ -30,35 +28,25 @@ def dergo_mesazh():
     if not pyetja.strip():
         return jsonify({"pergjigja": "Ju lutem shkruani diçka..."})
         
-    # Kemi vendosur modelin zyrtar gemini-2.5-flash për API v1
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={CHILESI_SEKRET}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={CHILESI_SEKRET}"
     
-    headers = {
-        "Content-Type": "application/json"
-    }
-    
+    headers = {"Content-Type": "application/json"}
     payload = {
-        "contents": [
-            {
-                "parts": [
-                    {"text": f"Rregullat e sistemit që duhet t'i zbatosh me ngulm:\n{rregullat}\n\nMesazhi i përdoruesit: {pyetja}"}
-                ]
-            }
-        ]
+        "contents": [{
+            "parts": [{"text": f"{rregullat}\n\nUser: {pyetja}"}]
+        }]
     }
     
     try:
-        REDEPLOY_REQ = requests.post(url, json=payload, headers=headers)
-        pergjigja_json = REDEPLOY_REQ.json()
-        
-        if "candidates" in pergjigja_json:
-            teksti = pergjigja_json["candidates"][0]["content"]["parts"][0]["text"]
+        req = requests.post(url, json=payload, headers=headers)
+        res = req.json()
+        if "candidates" in res:
+            teksti = res["candidates"][0]["content"]["parts"][0]["text"]
             return jsonify({"pergjigja": teksti})
         else:
-            return jsonify({"pergjigja": f"Gabim nga Google: {pergjigja_json}"})
-            
+            return jsonify({"pergjigja": f"Gabim: {res}"})
     except Exception as e:
-        return jsonify({"pergjigja": f"Gabim gjatë dërgimit: {e}"})
+        return jsonify({"pergjigja": f"Gabim: {e}"})
 
 if __name__ == '__main__':
     porti = int(os.environ.get("PORT", 5000))
