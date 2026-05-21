@@ -3,7 +3,7 @@ import requests
 from flask import Flask, render_template, request, jsonify, make_response
 from dotenv import load_dotenv
 
-# Ngarkon .env
+# Ngarkon file .env
 load_dotenv()
 
 app = Flask(__name__)
@@ -11,21 +11,29 @@ app = Flask(__name__)
 # Merr API KEY nga .env
 CHILESI_SEKRET = os.getenv("GEMINI_API_KEY")
 
+# Kontrollon nëse API key ekziston
+if not CHILESI_SEKRET:
+    print("❌ API KEY nuk u gjet në file .env")
+
+# Rregullat bazë të AI
 rregullat = "Je RedTech AI, një asistent inteligjent."
 
+# Lexon rregullat.txt nëse ekziston
 if os.path.exists("rregullat.txt"):
     try:
         with open("rregullat.txt", "r", encoding="utf-8") as f:
             rregullat = f.read()
     except Exception as e:
-        print(f"Gabim: {e}")
+        print(f"Gabim gjatë leximit të rregullave: {e}")
 
+# Faqja kryesore
 @app.route('/')
 def home():
     response = make_response(render_template('index.html'))
     response.headers['ngrok-skip-browser-warning'] = 'true'
     return response
 
+# API për mesazhe
 @app.route('/dergo', methods=['POST'])
 def dergo_mesazh():
     try:
@@ -38,6 +46,7 @@ def dergo_mesazh():
                 "pergjigja": "Ju lutem shkruani diçka..."
             })
 
+        # URL për Gemini AI
         url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={CHILESI_SEKRET}"
 
         headers = {
@@ -56,6 +65,7 @@ def dergo_mesazh():
             ]
         }
 
+        # Dërgon kërkesën
         req = requests.post(
             url,
             headers=headers,
@@ -67,6 +77,7 @@ def dergo_mesazh():
 
         print(res)
 
+        # Merr përgjigjen
         if "candidates" in res:
             teksti = res["candidates"][0]["content"]["parts"][0]["text"]
 
@@ -89,6 +100,7 @@ def dergo_mesazh():
             "pergjigja": f"Gabim gjatë dërgimit: {str(e)}"
         })
 
+# Nis serverin
 if __name__ == '__main__':
     porti = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=porti, debug=True)
