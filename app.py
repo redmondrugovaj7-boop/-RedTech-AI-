@@ -4,8 +4,10 @@ from flask import Flask, render_template, request, jsonify, make_response
 
 app = Flask(__name__)
 
-# Çelësi sekret i vendosur direkt në kod që të punojë në çdo PC!
-CHILESI_SEKRET = "AQ.Ab8RN6JBWngOklElIjD1yd8IDYIoGajTJYTVYERH2LMkEROE8Q"
+import os
+
+# Merr çelësin në mënyrë të sigurt nga Vercel
+CHILESI_SEKRET = os.environ.get('GEMINI_API_KEY')
 
 # Rregullat bazë të AI
 rregullat = "Je RedTech AI, një asistent inteligjent."
