@@ -40,7 +40,7 @@ def dergo_mesazh():
             })
 
         # URL zyrtare për Gemini AI në vitin 2026
-        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={CHILESI_SEKRET}"
+        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={CHILESI_SEKRET}"
 
         headers = {
             "Content-Type": "application/json"
